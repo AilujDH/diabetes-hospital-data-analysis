@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard – Caso de Negocio: Diabetes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
+
+  header {
+    background: #1a202c;
+    color: white;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header .logo { font-size: 11px; letter-spacing: 3px; opacity: 0.5; text-transform: uppercase; }
+  header h1 { font-size: 22px; font-weight: 700; }
+  header p { font-size: 13px; opacity: 0.6; margin-top: 2px; }
+  .accent { color: #00e5a0; }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 24px 32px 0;
+  }
+  .kpi {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    border-left: 4px solid #00e5a0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  .kpi .value { font-size: 32px; font-weight: 800; color: #1a202c; }
+  .kpi .label { font-size: 12px; color: #718096; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi .sub { font-size: 12px; color: #a0aec0; margin-top: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px 32px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    padding: 0 32px 20px;
+  }
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  .card h2 { font-size: 14px; font-weight: 700; color: #2d3748; margin-bottom: 4px; }
+  .card .subtitle { font-size: 12px; color: #a0aec0; margin-bottom: 16px; }
+  .card.full { grid-column: 1 / -1; }
+
+  .conclusion-box {
+    background: #1a202c;
+    color: white;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 0 32px 32px;
+  }
+  .conclusion-box h2 { font-size: 15px; font-weight: 700; color: #00e5a0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .conclusion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .conclusion-item { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 16px; }
+  .conclusion-item .num { font-size: 28px; font-weight: 800; color: #00e5a0; }
+  .conclusion-item p { font-size: 13px; opacity: 0.75; margin-top: 6px; line-height: 1.5; }
+
+  canvas { max-height: 260px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Digital House · Data Analytics</div>
+    <h1>Caso de Negocio: <span class="accent">Diabetes</span></h1>
+    <p>130 hospitales · EE.UU. · 1999–2008 · 99.492 registros analizados</p>
+  </div>
+</header>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="value">4,4</div>
+    <div class="label">Días promedio de internación</div>
+    <div class="sub">Mediana: 4 días · Máx: 14</div>
+  </div>
+  <div class="kpi">
+    <div class="value">53,6%</div>
+    <div class="label">Pacientes sin reingreso</div>
+    <div class="sub">11,2% reingresan en menos de 30 días</div>
+  </div>
+  <div class="kpi">
+    <div class="value">99.492</div>
+    <div class="label">Registros válidos</div>
+    <div class="sub">Tras limpieza de datos</div>
+  </div>
+  <div class="kpi">
+    <div class="value">46,4%</div>
+    <div class="label">Tasa de reingreso total</div>
+    <div class="sub">Suma de &lt;30 y &gt;30 días</div>
+  </div>
+</div>
+
+<!-- Fila 1 -->
+<div class="grid">
+  <div class="card">
+    <h2>Distribución de reingresos hospitalarios</h2>
+    <div class="subtitle">Proporción de pacientes según condición de reingreso</div>
+    <canvas id="chartReadmitted"></canvas>
+  </div>
+  <div class="card">
+    <h2>Tiempo de internación por rango etario</h2>
+    <div class="subtitle">Promedio de días en hospital por grupo de edad</div>
+    <canvas id="chartAge"></canvas>
+  </div>
+</div>
+
+<!-- Fila 2 -->
+<div class="grid">
+  <div class="card">
+    <h2>Tiempo de internación según cambio de tratamiento</h2>
+    <div class="subtitle">Pacientes con cambio de medicación vs. sin cambio</div>
+    <canvas id="chartChange"></canvas>
+  </div>
+  <div class="card">
+    <h2>Tasa de reingreso según uso de insulina</h2>
+    <div class="subtitle">Proporción que fue readmitida (binario)</div>
+    <canvas id="chartInsulin"></canvas>
+  </div>
+</div>
+
+<!-- Fila 3 -->
+<div class="grid-3">
+  <div class="card">
+    <h2>Tiempo de internación por raza</h2>
+    <div class="subtitle">Días promedio según origen étnico</div>
+    <canvas id="chartRace"></canvas>
+  </div>
+  <div class="card">
+    <h2>Tipos de admisión más frecuentes</h2>
+    <div class="subtitle">Cantidad de ingresos por tipo</div>
+    <canvas id="chartAdmission"></canvas>
+  </div>
+  <div class="card">
+    <h2>Reingreso por uso de insulina</h2>
+    <div class="subtitle">Distribución por condición de reingreso</div>
+    <canvas id="chartInsulinReadmit"></canvas>
+  </div>
+</div>
+
+<!-- Conclusiones -->
+<div class="conclusion-box">
+  <h2>Conclusiones del análisis</h2>
+  <div class="conclusion-grid">
+    <div class="conclusion-item">
+      <div class="num">+0,65 días</div>
+      <p>Los pacientes con <strong>cambio de tratamiento</strong> estuvieron internados en promedio 0,65 días más que los que no tuvieron cambios (4,75 vs 4,10 días), lo que sugiere que los casos más complejos requieren ajustes terapéuticos.</p>
+    </div>
+    <div class="conclusion-item">
+      <div class="num">+4,6%</div>
+      <p>Los pacientes que recibieron <strong>insulina</strong> tuvieron una tasa de reingreso 4,6 puntos porcentuales mayor (48,6% vs 44,0%), posiblemente porque corresponden a cuadros más severos.</p>
+    </div>
+    <div class="conclusion-item">
+      <div class="num">60–80 años</div>
+      <p>El rango etario <strong>60–80 años</strong> concentra la mayor cantidad de hospitalizaciones y también presenta los tiempos de internación más prolongados, alcanzando hasta 4,80 días promedio en el grupo 80–90.</p>
+    </div>
+    <div class="conclusion-item">
+      <div class="num">53%</div>
+      <p>Más de la mitad de los pacientes <strong>no fue readmitida</strong>, pero el 11,2% reingresó en menos de 30 días, lo cual representa un grupo de alto riesgo prioritario para intervención preventiva.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const green = '#00e5a0';
+const dark = '#2d3748';
+const palette = ['#00e5a0','#4299e1','#f6ad55','#fc8181','#9f7aea','#68d391'];
+
+// 1. Doughnut - Reingresos
+new Chart(document.getElementById('chartReadmitted'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Sin reingreso (NO)', 'Reingreso >30 días', 'Reingreso <30 días'],
+    datasets: [{ data: [53.6, 35.2, 11.2], backgroundColor: [green, '#4299e1', '#fc8181'], borderWidth: 0 }]
+  },
+  options: { plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } }, cutout: '60%' }
+});
+
+// 2. Bar - Edad
+new Chart(document.getElementById('chartAge'), {
+  type: 'bar',
+  data: {
+    labels: ['0-10','10-20','20-30','30-40','40-50','50-60','60-70','70-80','80-90','90-100'],
+    datasets: [{ label: 'Días promedio', data: [2.55,3.21,3.57,3.80,4.05,4.13,4.39,4.60,4.80,4.74], backgroundColor: palette[0], borderRadius: 4 }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 6 } } }
+});
+
+// 3. Bar - Change
+new Chart(document.getElementById('chartChange'), {
+  type: 'bar',
+  data: {
+    labels: ['Sin cambio de medicación', 'Con cambio de medicación'],
+    datasets: [{ label: 'Días promedio', data: [4.10, 4.75], backgroundColor: ['#4299e1', green], borderRadius: 6 }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false, min: 3.5, max: 5.5 } }, indexAxis: 'y' }
+});
+
+// 4. Bar - Insulina reingreso
+new Chart(document.getElementById('chartInsulin'), {
+  type: 'bar',
+  data: {
+    labels: ['Sin insulina', 'Con insulina'],
+    datasets: [{ label: 'Tasa de reingreso', data: [44.0, 48.6], backgroundColor: ['#f6ad55', green], borderRadius: 6 }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false, min: 38, max: 55, ticks: { callback: v => v+'%' } } }, indexAxis: 'y' }
+});
+
+// 5. Bar - Raza
+new Chart(document.getElementById('chartRace'), {
+  type: 'bar',
+  data: {
+    labels: ['AfricanAmerican','Caucasian','Other','Hispanic','Asian'],
+    datasets: [{ label: 'Días promedio', data: [4.51, 4.39, 4.28, 4.06, 4.00], backgroundColor: green, borderRadius: 4 }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false, min: 3.5, max: 5 }, x: { ticks: { font: { size: 10 } } } } }
+});
+
+// 6. Bar - Admisión
+new Chart(document.getElementById('chartAdmission'), {
+  type: 'bar',
+  data: {
+    labels: ['Emergency','Elective','Urgent'],
+    datasets: [{ label: 'Pacientes', data: [52900, 18507, 17786], backgroundColor: ['#fc8181','#4299e1','#f6ad55'], borderRadius: 4 }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+// 7. Doughnut - Insulina readmit
+new Chart(document.getElementById('chartInsulinReadmit'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Sin insulina – No readmit.', 'Con insulina – Readmitido'],
+    datasets: [{ data: [44.0, 48.6], backgroundColor: ['#4299e1', green], borderWidth: 0 }]
+  },
+  options: { plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }, cutout: '55%' }
+});
+</script>
+</body>
+</html>
