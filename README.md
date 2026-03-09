@@ -1,5 +1,3 @@
-# diabetes-hospital-data-analysis
-Exploratory data analysis of hospital readmissions among diabetic patients using Python.
 
 # Diabetes Hospital Readmission Analysis
 
@@ -38,7 +36,7 @@ The dataset contains hospital records of diabetic patients including:
 ## Key Insights
 
 The analysis explores patterns in hospital stay length and patient characteristics that may relate to readmission outcomes.
-
+Dashboard html :  https://ailujdh.github.io/diabetes-hospital-data-analysis/
 ## Author
 
 Julia Fernandez
